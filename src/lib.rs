@@ -51,6 +51,57 @@ impl IdPool {
         }
         Some(id)
     }
+
+    /// Return an id to the pool.
+    pub fn return_id(&mut self, id: Num) -> Result<(), Num> {
+        // search stored ranges for the id in question
+        let position = self.free.binary_search_by(|range| {
+            // match if the id value is contained within the range
+            if range.contains(&id) {
+                std::cmp::Ordering::Equal
+            }
+            // also match if the id value is adjacent to the range
+            else if range.start.checked_sub(1) == Some(id) || range.end == id {
+                std::cmp::Ordering::Equal
+            }
+            // otherwise indicate the match must be closer to the id value
+            else {
+                id.cmp(&range.start)
+            }
+        });
+        match position {
+            // range containing id in question was not found,
+            // insert a new range that includes the returned id
+            // at a point in the list that is closest to the id value
+            Err(i) => self.free.insert(
+                i,
+                Range {
+                    start: id,
+                    end: id + 1,
+                },
+            ),
+            // found range adjacent to or containing the id in question
+            Ok(i) => {
+                let range = &mut self.free[i];
+                // id value adjacent to range start point
+                if range.start.checked_sub(1) == Some(id) {
+                    range.start = id;
+                }
+                // id value adjacent to range end point
+                else if range.end == id {
+                    range.end = range.end + 1;
+                }
+                // id value contained within one of the ranges,
+                // can't return id to the pool
+                else {
+                    return Err(id);
+                }
+                // TODO merge ranges if they touch
+            }
+        }
+
+        Ok(())
+    }
 }
 
 #[cfg(test)]
@@ -63,5 +114,21 @@ mod tests {
         assert_eq!(Some(1), pool.request_id());
         assert_eq!(Some(2), pool.request_id());
         assert_eq!(Some(3), pool.request_id());
+    }
+
+    #[test]
+    fn request_return() {
+        let mut pool = IdPool::new_ranged(1..Num::MAX);
+        assert_eq!(Some(1), pool.request_id());
+        assert_eq!(Some(2), pool.request_id());
+        assert_eq!(Some(3), pool.request_id());
+        assert_eq!(Ok(()), pool.return_id(1));
+        assert_eq!(Some(1), pool.request_id());
+        assert_eq!(Ok(()), pool.return_id(2));
+        assert_eq!(Some(2), pool.request_id());
+        assert_eq!(Some(4), pool.request_id());
+        assert_eq!(Ok(()), pool.return_id(3));
+        assert_eq!(Ok(()), pool.return_id(4));
+        assert_eq!(Err(5), pool.return_id(5));
     }
 }
