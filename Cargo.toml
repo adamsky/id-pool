@@ -1,0 +1,5 @@
+[package]
+name = "id-pool"
+version = "0.1.0"
+authors = ["Adam Adamsky <adamsky@enum.space>"]
+edition = "2018"
