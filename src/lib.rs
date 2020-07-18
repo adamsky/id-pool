@@ -1,8 +1,13 @@
 //! Create and recycle integer ids using a ranged pool.
 
+type Range = std::ops::Range<usize>;
+
+/// Handles requests and returns of ids based on internal
+/// state.
 #[derive(Debug, Clone)]
 pub struct IdPool {
-    free: Vec<std::ops::Range<usize>>,
+    /// List of available id ranges
+    free: Vec<Range>,
 }
 
 impl IdPool {
@@ -13,8 +18,17 @@ impl IdPool {
         }
     }
 
+    /// Creates a new `IdPool` with the given range.
+    pub fn new_ranged(range: Range) -> Self {
+        Self { free: vec![range] }
+    }
+
     /// Returns a new id.
     pub fn request_id(&mut self) -> Option<usize> {
+        // short-circuit if there are no free ranges
+        if self.free.len() == 0 {
+            return None;
+        }
         // always work on the last range on the list
         let range = self.free.last_mut().unwrap();
         // get the first number from the range
