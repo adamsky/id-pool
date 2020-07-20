@@ -96,7 +96,17 @@ impl IdPool {
                 else {
                     return Err(id);
                 }
-                // TODO merge ranges if they touch
+                // check if there exists a range before the current one
+                let before_range_idx = match i.checked_sub(1) {
+                    Some(idx) => idx,
+                    None => return Err(id),
+                };
+                // if the current range's end point is the previous range's
+                // start point, then merge the ranges into one
+                if self.free[before_range_idx].start == self.free[i].end {
+                    self.free[before_range_idx].start = self.free[i].start;
+                    self.free.remove(i);
+                }
             }
         }
 
