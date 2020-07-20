@@ -1,4 +1,17 @@
 //! Create and recycle integer ids using a ranged pool.
+//!
+//! This crate is fairly minimalistic and so only deals
+//! with single type of numerical ids. These can be either
+//! `usize` (default), `u64`, `u32` or `u16`, chosen with
+//! the use of appropriate crate feature.
+//!
+//! The main exported structure [`IdPool`] can be
+//! initialized with a custom range and then queried for
+//! new ids that are contained within that range. During
+//! the course of the program, ids can be returned to the
+//! pool to be reused for subsequent id request calls.
+//!
+//! [`IdPool`]: struct.IdPool.html
 
 #[cfg(feature = "u16")]
 type Num = u16;
@@ -9,11 +22,36 @@ type Num = u64;
 #[cfg(feature = "usize")]
 type Num = usize;
 
+/// Encapsulate `Range` type over `Num`.
 type Range = std::ops::Range<Num>;
 
 /// Keeps track of free ids within a specified range,
 /// handles requests and returns of ids based on internal
 /// state.
+///
+/// Internally, a collection of free id ranges is stored.
+/// On a request for an id from the pool the lowest
+/// available number will be returned to the caller.
+/// Ids can also be returned to the pool to be reused by
+/// subsequent id requests.
+///
+/// # Examples
+///
+/// ```
+/// # use id_pool::IdPool;
+/// // initialize a new pool ranged 1 to 10
+/// let mut pool = IdPool::new_ranged(1..10);
+/// // request some ids
+/// assert_eq!(Some(1), pool.request_id());
+/// assert_eq!(Some(2), pool.request_id());
+/// assert_eq!(Some(3), pool.request_id());
+/// // return the first id
+/// assert_eq!(Ok(()), pool.return_id(1));
+/// // next request returns recycled first id
+/// assert_eq!(Some(1), pool.request_id());
+/// // subsequent request returns the next free value
+/// assert_eq!(Some(4), pool.request_id());
+/// ```
 #[derive(Debug, Clone)]
 pub struct IdPool {
     /// List of available id ranges
@@ -21,7 +59,8 @@ pub struct IdPool {
 }
 
 impl IdPool {
-    /// Creates a new `IdPool` with a default range.
+    /// Creates a new `IdPool` with a default range, which
+    /// starts at `1` and ends at `Num::MAX`.
     pub fn new() -> Self {
         Self {
             free: vec![1..Num::MAX],
@@ -33,7 +72,8 @@ impl IdPool {
         Self { free: vec![range] }
     }
 
-    /// Returns a new id.
+    /// Returns a new id or `None` if there are no free ids
+    /// in the pool.
     pub fn request_id(&mut self) -> Option<Num> {
         // short-circuit if there are no free ranges
         if self.free.len() == 0 {
@@ -52,7 +92,8 @@ impl IdPool {
         Some(id)
     }
 
-    /// Return an id to the pool.
+    /// Returns an id to the pool or `Err(Num)` if the
+    /// id is already in the pool.
     pub fn return_id(&mut self, id: Num) -> Result<(), Num> {
         // search stored ranges for the id in question
         let position = self.free.binary_search_by(|range| {
