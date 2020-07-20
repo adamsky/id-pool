@@ -5,7 +5,7 @@ authors = ["Adam Adamsky <adamsky@enum.space>"]
 edition = "2018"
 
 [features]
-default = ["u16"]
+default = ["usize"]
 usize = []
 u64 = []
 u32 = []

@@ -22,8 +22,24 @@ type Num = u64;
 #[cfg(feature = "usize")]
 type Num = usize;
 
-/// Encapsulate `Range` type over `Num`.
-type Range = std::ops::Range<Num>;
+/// Custom range struct
+#[derive(Copy, Debug, Clone)]
+pub struct Range {
+    start: Num,
+    end: Num,
+}
+impl Range {
+    /// Calculates the length of the range.
+    pub fn len(&self) -> Num {
+        self.end - self.start
+    }
+    /// Calculates whether a given value is contained
+    /// within the range.
+    pub fn contains(&self, value: &Num) -> bool {
+        // &self.start <= value && value >= &self.end
+        value >= &self.start && value <= &self.end
+    }
+}
 
 /// Keeps track of free ids within a specified range,
 /// handles requests and returns of ids based on internal
@@ -39,8 +55,8 @@ type Range = std::ops::Range<Num>;
 ///
 /// ```
 /// # use id_pool::IdPool;
-/// // initialize a new pool ranged 1 to 10
-/// let mut pool = IdPool::new_ranged(1..10);
+/// // initialize a new pool
+/// let mut pool = IdPool::new();
 /// // request some ids
 /// assert_eq!(Some(1), pool.request_id());
 /// assert_eq!(Some(2), pool.request_id());
@@ -52,33 +68,33 @@ type Range = std::ops::Range<Num>;
 /// // subsequent request returns the next free value
 /// assert_eq!(Some(4), pool.request_id());
 /// ```
+
 #[derive(Debug, Clone)]
 pub struct IdPool {
     /// List of available id ranges
     free: Vec<Range>,
     /// Number of ids currently in use
-    used: Num,
+    used: usize,
 }
 
 impl IdPool {
     /// Creates a new `IdPool` with a default range, which
     /// starts at `1` and ends at `Num::MAX`.
     pub fn new() -> Self {
-        Self {
-            free: vec![1..Num::MAX],
-            used: 0,
-        }
+        Self::new_ranged(1..Num::MAX)
     }
 
     /// Creates a new `IdPool` with the given range.
-    pub fn new_ranged(range: Range) -> Self {
-        Self {
-            free: vec![range],
-            used: 0,
-        }
+    pub fn new_ranged(range: std::ops::Range<Num>) -> Self {
+        let vec = vec![Range {
+            start: range.start,
+            end: range.end,
+        }];
+        Self { free: vec, used: 0 }
     }
 
-    pub fn get_used(&self) -> Num {
+    /// Gets the current count of used ids.
+    pub fn get_used(&self) -> usize {
         self.used
     }
 
@@ -94,7 +110,7 @@ impl IdPool {
         // get the first number from the range
         let id = range.start;
         // increment range starting point
-        range.start = range.start + 1;
+        range.start += 1;
         // if we have just emptied the range then pop it from the list
         if range.len() == 0 {
             self.free.pop();
@@ -108,12 +124,12 @@ impl IdPool {
     pub fn return_id(&mut self, id: Num) -> Result<(), Num> {
         // search stored ranges for the id in question
         let position = self.free.binary_search_by(|range| {
-            // match if the id value is contained within the range
-            if range.contains(&id) {
+            // match if the id value is adjacent to the range
+            if range.start.checked_sub(1) == Some(id) || range.end == id {
                 std::cmp::Ordering::Equal
             }
-            // also match if the id value is adjacent to the range
-            else if range.start.checked_sub(1) == Some(id) || range.end == id {
+            // match if the id value is contained within the range
+            else if range.contains(&id) {
                 std::cmp::Ordering::Equal
             }
             // otherwise indicate the match must be closer to the id value
@@ -167,7 +183,6 @@ impl IdPool {
 }
 
 #[cfg(test)]
-#[feature(test)]
 mod tests {
     use super::*;
 
