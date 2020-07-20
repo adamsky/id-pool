@@ -56,6 +56,8 @@ type Range = std::ops::Range<Num>;
 pub struct IdPool {
     /// List of available id ranges
     free: Vec<Range>,
+    /// Number of ids currently in use
+    used: Num,
 }
 
 impl IdPool {
@@ -64,12 +66,20 @@ impl IdPool {
     pub fn new() -> Self {
         Self {
             free: vec![1..Num::MAX],
+            used: 0,
         }
     }
 
     /// Creates a new `IdPool` with the given range.
     pub fn new_ranged(range: Range) -> Self {
-        Self { free: vec![range] }
+        Self {
+            free: vec![range],
+            used: 0,
+        }
+    }
+
+    pub fn get_used(&self) -> Num {
+        self.used
     }
 
     /// Returns a new id or `None` if there are no free ids
@@ -89,6 +99,7 @@ impl IdPool {
         if range.len() == 0 {
             self.free.pop();
         }
+        self.used += 1;
         Some(id)
     }
 
@@ -150,12 +161,13 @@ impl IdPool {
                 }
             }
         }
-
+        self.used -= 1;
         Ok(())
     }
 }
 
 #[cfg(test)]
+#[feature(test)]
 mod tests {
     use super::*;
 
@@ -181,5 +193,15 @@ mod tests {
         assert_eq!(Ok(()), pool.return_id(3));
         assert_eq!(Ok(()), pool.return_id(4));
         assert_eq!(Err(5), pool.return_id(5));
+    }
+
+    #[test]
+    fn used_count() {
+        let mut pool = IdPool::new_ranged(1..10);
+        assert_eq!(Some(1), pool.request_id());
+        assert_eq!(Some(2), pool.request_id());
+        assert_eq!(Some(3), pool.request_id());
+        assert_eq!(Ok(()), pool.return_id(1));
+        assert_eq!(2, pool.get_used());
     }
 }
