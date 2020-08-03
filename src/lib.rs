@@ -12,6 +12,10 @@
 //! pool to be reused for subsequent id request calls.
 //!
 //! [`IdPool`]: struct.IdPool.html
+//!
+
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
 
 #[cfg(feature = "u16")]
 type Num = u16;
@@ -24,6 +28,7 @@ type Num = usize;
 
 /// Custom range struct
 #[derive(Copy, Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct Range {
     start: Num,
     end: Num,
@@ -70,6 +75,7 @@ impl Range {
 /// ```
 
 #[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct IdPool {
     /// List of available id ranges
     free: Vec<Range>,

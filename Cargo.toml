@@ -1,7 +1,7 @@
 [package]
 name = "id-pool"
 version = "0.1.0"
-authors = ["Adam Adamsky <adamsky@enum.space>"]
+authors = ["adamsky <adamsky@enum.space>"]
 edition = "2018"
 
 [features]
@@ -10,3 +10,6 @@ usize = []
 u64 = []
 u32 = []
 u16 = []
+
+[dependencies]
+serde = { version = "1.0.114", optional = true }
