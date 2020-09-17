@@ -3,6 +3,10 @@ name = "id-pool"
 version = "0.1.0"
 authors = ["adamsky <adamsky@enum.space>"]
 edition = "2018"
+description = "Create and recycle integer ids using a ranged pool"
+repository = "https://github.com/adamsky/id-pool"
+keywords = ["id", "pool", "range"]
+license = "MIT"
 
 [features]
 default = ["usize"]
