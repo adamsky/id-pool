@@ -12,7 +12,6 @@
 //! pool to be reused for subsequent id request calls.
 //!
 //! [`IdPool`]: struct.IdPool.html
-//!
 
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
@@ -38,6 +37,7 @@ impl Range {
     pub fn len(&self) -> Num {
         self.end - self.start
     }
+
     /// Calculates whether a given value is contained
     /// within the range.
     pub fn contains(&self, value: &Num) -> bool {
@@ -51,7 +51,7 @@ impl Range {
 /// state.
 ///
 /// Internally, a collection of free id ranges is stored.
-/// On a request for an id from the pool the lowest
+/// On a request for an id from the pool, the lowest
 /// available number will be returned to the caller.
 /// Ids can also be returned to the pool to be reused by
 /// subsequent id requests.
@@ -73,7 +73,6 @@ impl Range {
 /// // subsequent request returns the next free value
 /// assert_eq!(Some(4), pool.request_id());
 /// ```
-
 #[derive(Debug, Clone)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct IdPool {
