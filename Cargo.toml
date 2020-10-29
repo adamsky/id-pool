@@ -16,4 +16,4 @@ u32 = []
 u16 = []
 
 [dependencies]
-serde = { version = "1.0.114", optional = true }
+serde = { version = "1.0.117", optional = true }
