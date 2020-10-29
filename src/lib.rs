@@ -99,7 +99,7 @@ impl IdPool {
     }
 
     /// Gets the current count of used ids.
-    pub fn get_used(&self) -> usize {
+    pub fn used_count(&self) -> usize {
         self.used
     }
 
