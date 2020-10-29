@@ -17,3 +17,10 @@ u16 = []
 
 [dependencies]
 serde = { version = "1.0.117", optional = true }
+
+[dev-dependencies]
+criterion = "0.3.3"
+
+[[bench]]
+name = "main"
+harness = false
