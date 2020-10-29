@@ -222,6 +222,6 @@ mod tests {
         assert_eq!(Some(2), pool.request_id());
         assert_eq!(Some(3), pool.request_id());
         assert_eq!(Ok(()), pool.return_id(1));
-        assert_eq!(2, pool.get_used());
+        assert_eq!(2, pool.used_count());
     }
 }
