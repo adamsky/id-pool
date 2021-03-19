@@ -84,9 +84,9 @@ pub struct IdPool {
 
 impl IdPool {
     /// Creates a new `IdPool` with a default range, which
-    /// starts at `1` and ends at `Num::MAX`.
+    /// starts at `1` and ends at `Num::max_value()`.
     pub fn new() -> Self {
-        Self::new_ranged(1..Num::MAX)
+        Self::new_ranged(1..Num::max_value())
     }
 
     /// Creates a new `IdPool` with the given range.
@@ -201,7 +201,7 @@ mod tests {
 
     #[test]
     fn request_return() {
-        let mut pool = IdPool::new_ranged(1..Num::MAX);
+        let mut pool = IdPool::new_ranged(1..Num::max_value());
         assert_eq!(Some(1), pool.request_id());
         assert_eq!(Some(2), pool.request_id());
         assert_eq!(Some(3), pool.request_id());
