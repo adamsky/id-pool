@@ -84,9 +84,9 @@ pub struct IdPool {
 
 impl IdPool {
     /// Creates a new `IdPool` with a default range, which
-    /// starts at `1` and ends at `Num::max_value()`.
+    /// starts at `1` and ends at `Num::MAX`.
     pub fn new() -> Self {
-        Self::new_ranged(1..Num::max_value())
+        Self::new_ranged(1..Num::MAX)
     }
 
     /// Creates a new `IdPool` with the given range.
