@@ -1,7 +1,7 @@
 [package]
 name = "id-pool"
 version = "0.2.1"
-authors = ["adamsky <adamsky@enum.space>"]
+authors = ["Adam Wierchoła <adam@wierchola.com>"]
 edition = "2018"
 description = "Create and recycle integer ids using a ranged pool"
 repository = "https://github.com/adamsky/id-pool"
