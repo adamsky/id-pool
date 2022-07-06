@@ -170,15 +170,13 @@ impl IdPool {
                     return Err(id);
                 }
                 // check if there exists a range before the current one
-                let before_range_idx = match i.checked_sub(1) {
-                    Some(idx) => idx,
-                    None => return Err(id),
-                };
-                // if the current range's end point is the previous range's
-                // start point, then merge the ranges into one
-                if self.free[before_range_idx].start == self.free[i].end {
-                    self.free[before_range_idx].start = self.free[i].start;
-                    self.free.remove(i);
+                if let Some(before_range_idx) = i.checked_sub(1) {
+                    // if the current range's end point is the previous range's
+                    // start point, then merge the ranges into one
+                    if self.free[before_range_idx].start == self.free[i].end {
+                        self.free[before_range_idx].start = self.free[i].start;
+                        self.free.remove(i);
+                    }
                 }
             }
         }
@@ -223,5 +221,14 @@ mod tests {
         assert_eq!(Some(3), pool.request_id());
         assert_eq!(Ok(()), pool.return_id(1));
         assert_eq!(2, pool.used_count());
+    }
+
+    #[test]
+    fn return_last() {
+        let mut pool = IdPool::new_ranged(1..10);
+        assert_eq!(Some(1), pool.request_id());
+        assert_eq!(Some(2), pool.request_id());
+        assert_eq!(Some(3), pool.request_id());
+        assert_eq!(Ok(()), pool.return_id(3));
     }
 }
