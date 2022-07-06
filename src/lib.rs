@@ -199,7 +199,7 @@ mod tests {
 
     #[test]
     fn request_return() {
-        let mut pool = IdPool::new_ranged(1..Num::max_value());
+        let mut pool = IdPool::new();
         assert_eq!(Some(1), pool.request_id());
         assert_eq!(Some(2), pool.request_id());
         assert_eq!(Some(3), pool.request_id());
