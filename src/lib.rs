@@ -41,7 +41,6 @@ impl Range {
     /// Calculates whether a given value is contained
     /// within the range.
     pub fn contains(&self, value: &Num) -> bool {
-        // &self.start <= value && value >= &self.end
         value >= &self.start && value <= &self.end
     }
 }
